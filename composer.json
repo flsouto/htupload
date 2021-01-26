@@ -12,7 +12,8 @@
   "keywords"  : ["forms","html","data","processing","request","http","widgets"],
   "require": {
     "php" : ">=5.6.2",
-    "flsouto/htwidget": "^1.0"
+    "flsouto/htwidget": "^1.0",
+    "ext-fileinfo": "*"
   },
   "autoload" :{
     "psr-0" : {

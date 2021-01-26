@@ -5,6 +5,7 @@ class HtUpload extends HtWidget{
 
     protected $accept = [];
     protected $accept_errmsg = '';
+    protected $required_errmsg = '';
     protected $savedir = '';
     protected $selected_text = '%s';
 
@@ -41,6 +42,11 @@ class HtUpload extends HtWidget{
         return $this;
     }
 
+    function required($errmsg = 'Please choose a file.'){
+        $this->required_errmsg = $errmsg;
+        return $this;
+    }
+
     function process($force = false)
     {
         if($this->result && !$force){
@@ -54,7 +60,10 @@ class HtUpload extends HtWidget{
         $key = $this->getSubmitFlag();
 
         if(empty($_FILES[$key]['tmp_name'])){
-           return $result;
+            if($this->required_errmsg){
+                $result->error = $this->required_errmsg;
+            }
+            return $result;
         }
 
         if($this->accept){
