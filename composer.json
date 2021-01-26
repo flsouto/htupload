@@ -1,6 +1,6 @@
 {
-  "name": "flsouto/htform",
-  "description": "Library for building html forms without pain",
+  "name": "flsouto/htupload",
+  "description": "Plugin widget for flsouto/htform which enables file uploads.",
   "type": "library",
   "authors": [
     {
@@ -9,16 +9,10 @@
     }
   ],
   "minimum-stability": "dev",
-  "keywords"  : ["forms","html","data","processing","request","http"],
-  "php" : ">=5.6.2",
+  "keywords"  : ["forms","html","data","processing","request","http","widgets"],
   "require": {
-    "flsouto/htattrs": "^1.0",
-    "flsouto/htbutton": "^1.0",
-    "flsouto/hthidden": "^1.0",
-    "flsouto/httextin": "^1.0",
-    "flsouto/httextar": "^1.0",
-    "flsouto/htcheckb": "^1.0",
-    "flsouto/htselect": "^1.0"
+    "php" : ">=5.6.2",
+    "flsouto/htwidget": "^1.0"
   },
   "autoload" :{
     "psr-0" : {
