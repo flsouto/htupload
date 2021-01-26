@@ -31,7 +31,7 @@ class HtUploadTest extends TestCase{
         $key = 'attachment_submit';
 
         $_FILES[$key]['tmp_name'] = $tmpf;
-        $_FILES[$key]['original_name'] = 'MyDocument.txt';
+        $_FILES[$key]['name'] = 'MyDocument.txt';
 
         #mdx:2
         $up = new HtUpload("attachment",__DIR__);
@@ -40,11 +40,11 @@ class HtUploadTest extends TestCase{
         #/mdx
 
         $this->assertNotEmpty($result->output);
-        $this->assertEquals($up->original(), $_FILES[$key]['original_name']);
+        $this->assertEquals($up->original(), $_FILES[$key]['name']);
 
         $output = $up->__toString();
         $this->assertNotContains('Choose a file', $output);
-        $this->assertContains('Attachment: '.$_FILES[$key]['original_name'], $output);
+        $this->assertContains('Attachment: '.$_FILES[$key]['name'], $output);
         $this->assertEmpty($result->error);
 
     }
@@ -56,7 +56,7 @@ class HtUploadTest extends TestCase{
         $key = 'attachment_submit';
 
         $_FILES[$key]['tmp_name'] = $tmpf;
-        $_FILES[$key]['original_name'] = 'MyDocument.txt';
+        $_FILES[$key]['name'] = 'MyDocument.txt';
 
         #mdx:3
         $up = new HtUpload("attachment",__DIR__);
@@ -79,7 +79,7 @@ class HtUploadTest extends TestCase{
 
         $key = 'attachment_submit';
 
-        $_FILES[$key] = null;
+        $_FILES[$key] = [];
 
         #mdx:4
         $up = new HtUpload("attachment",__DIR__);
@@ -88,6 +88,46 @@ class HtUploadTest extends TestCase{
         #/mdx
 
         $this->assertNotEmpty($result->error);
+
+    }
+
+    function testUploadPersistence()
+    {
+
+
+        file_put_contents($tmpf =__DIR__."/MyDocument.txt", "This is a test");
+
+        $key = 'attachment_submit';
+
+        // Upload for the first time
+        $_FILES[$key]['tmp_name'] = $tmpf;
+        $_FILES[$key]['name'] = 'MyDocument.txt';
+        $up = new HtUpload("attachment",__DIR__);
+        $result = $up->process();
+
+        // Assert that the redisplayed form contains the uploaded file name (to be resent on form submit)
+        $output = $up->__toString();
+        $this->assertContains($result->output, $output);
+
+        // Simulate form is submitted again, without picking any file this time
+        $_FILES[$key] = [];
+        $up->context([
+            'attachment' => $result->output
+        ]);
+        $result2 = $up->process(true);
+
+        // Assert that the result is the same (previously uploaded file remains)
+        $this->assertEquals($result->output, $result2->output);
+        $this->assertFileExists(__DIR__."/".$result2->output);
+
+        // Simulate new upload, make sure old file gets deleted
+        file_put_contents($tmpf =__DIR__."/MyDocument2.txt", "This is another test");
+        $_FILES[$key]['tmp_name'] = $tmpf;
+        $_FILES[$key]['name'] = 'MyDocument2.txt';
+        $result3 = $up->process(true);
+
+        $this->assertNotEquals($result3->output, $result->output);
+        $this->assertFileNotExists(__DIR__.'/'.$result->output);
 
     }
 }

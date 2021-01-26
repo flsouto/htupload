@@ -13,6 +13,8 @@ class HtUpload extends HtWidget{
     {
         parent::__construct($name);
         $this->savedir = $savedir;
+        $this->label_attrs['style']['cursor'] = 'pointer';
+
     }
 
     function savedir(){
@@ -42,6 +44,10 @@ class HtUpload extends HtWidget{
         return $this;
     }
 
+    function validate(){
+        return $this->process()->error;
+    }
+
     function required($errmsg = 'Please choose a file.'){
         $this->required_errmsg = $errmsg;
         return $this;
@@ -59,8 +65,23 @@ class HtUpload extends HtWidget{
 
         $key = $this->getSubmitFlag();
 
+        if(!isset($_FILES[$key])){
+            return $result;
+        }
+
+        $persisted = $this->param->process($this->context)->output;
+
+        if(!empty($_FILES[$key]['error']) && $_FILES[$key]['error'] != 4){
+            $result->output = $persisted;
+            $result->error = 'Upload error: '.$_FILES[$key]['error'];
+            return $result;
+        }
+
         if(empty($_FILES[$key]['tmp_name'])){
-            if($this->required_errmsg){
+            if($persisted){
+                $result->output = $persisted;
+            }
+            else if($this->required_errmsg){
                 $result->error = $this->required_errmsg;
             }
             return $result;
@@ -70,16 +91,22 @@ class HtUpload extends HtWidget{
             $mime = mime_content_type($_FILES[$key]['tmp_name']);
             if(!in_array($mime, $this->accept)){
                 $result->error = $this->accept_errmsg;
+                return $result;
             }
-        } else {
-            $ext = pathinfo($_FILES[$key]['original_name'],PATHINFO_EXTENSION);
-            $save_as = time().base64_encode($_FILES[$key]['original_name']);
-            if($ext){
-                $save_as .= '.'.$ext;
-            }
-            copy($_FILES[$key]['tmp_name'],$this->savedir.'/'.$save_as);
-            $result->output = $save_as;
         }
+
+        $ext = pathinfo($_FILES[$key]['name'],PATHINFO_EXTENSION);
+        $save_as = time().base64_encode($_FILES[$key]['name']);
+        if($ext){
+            $save_as .= '.'.$ext;
+        }
+
+        copy($_FILES[$key]['tmp_name'],$this->savedir.'/'.$save_as);
+        if($persisted && file_exists($this->savedir.'/'.$persisted)){
+            unlink($this->savedir.'/'.$persisted);
+        }
+
+        $result->output = $save_as;
 
         return $result;
     }
@@ -94,9 +121,7 @@ class HtUpload extends HtWidget{
         // Render file uploader input
         $this->attrs['type'] = 'file';
         $this->attrs['name'] = $this->getSubmitFlag();
-        if($this->accept){
-            $this->attrs['accept'] = implode(',', $this->accept);
-        }
+
         if($this->label_text){
             $this->attrs['style'] = 'display:none';
         }
@@ -109,7 +134,6 @@ class HtUpload extends HtWidget{
         $this->label_text = $this->original()
             ? sprintf($this->selected_text, $this->original())
             : $this->label_text;
-
         $this->renderLabel();
         $this->label_text = $tmp; // restore
     }
@@ -138,6 +162,7 @@ class HtUpload extends HtWidget{
             $this->renderReadonly();
         } else {
             $this->renderWritable();
+            $this->renderError();
         }
     }
 
