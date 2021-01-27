@@ -24,7 +24,7 @@ if($_SERVER['REQUEST_METHOD']=='POST'){
 
 // UI customizations
 $up->label(["text"=>"Pick a file from your computer","selected"=>"Selected file: %s"]);
-$up->attrs(['onChange'=>'this.form.submit()']);
+//$up->attrs(['onChange'=>'this.form.submit()']);
 ?>
 
 <form method="POST" enctype="multipart/form-data">
