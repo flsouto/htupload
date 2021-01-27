@@ -137,7 +137,7 @@ class HtUpload extends HtWidget{
         $this->renderLabel();
         $this->label_text = $tmp; // restore
         // little snippet to update selected file
-        $update = json_encode($this->selected_text).".replace('%', this.value)";
+        $update = json_encode($this->selected_text).".replace('%s', this.value)";
         echo "<script>document.getElementById('{$this->id()}').addEventListener('change',function(){ document.querySelector('label[for='+this.id+']').innerHTML = $update; });</script>";
 
     }
